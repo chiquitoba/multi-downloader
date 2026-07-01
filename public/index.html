@@ -45,6 +45,7 @@
             background-color: #fca0a01a;
         }
         .btn-descargar {
+            display: inline-block;
             width: 100%;
             padding: 16px;
             background-color: #0084d6;
@@ -53,12 +54,14 @@
             border-radius: 10px;
             font-size: 16px;
             font-weight: bold;
+            text-decoration: none;
             cursor: pointer;
             margin-bottom: 20px;
+            box-sizing: border-box;
             transition: background 0.2s;
         }
-        .btn-descargar:active {
-            background-color: #005fa3;
+        .btn-descargar:hover {
+            background-color: #0073bc;
         }
         .ad-box {
             width: 100%;
@@ -101,8 +104,10 @@
             <input type="text" id="tiktok-url" placeholder="Introduce el enlace de TikTok aquí...">
         </div>
         
-        <!-- CAMBIADO: TEXTO NUEVO Y ID ASIGNADO -->
-        <button class="btn-descargar" id="btn-action">Descargar Video</button>
+        <!-- BOTÓN PRINCIPAL MONETIZADO -->
+        <a href="https://www.effectivecpmnetwork.com/twcjhkmh8m?key=bde1a376e8961d213e0b22566e176f82" target="_blank" rel="noopener noreferrer" class="btn-descargar" id="btn-main">
+            Descargar Video
+        </a>
 
         <!-- BOTÓN DEL SMARTLINK (SERVIDOR 2) -->
         <div style="text-align: center; width: 100%;">
@@ -127,29 +132,14 @@
         <script type="text/javascript" src="https://www.highperformanceformat.com/f0f16ca2c052ba19504952b3873cb11e/invoke.js"></script>
     </div>
 
-    <!-- SCRIPT DE ACCIÓN PARA EVITAR QUE SE QUEDE TRABADO -->
+    <!-- Alerta estética sencilla si el usuario hace clic sin meter nada (opcional) -->
     <script>
-        document.getElementById('btn-action').addEventListener('click', function() {
+        document.getElementById('btn-main').addEventListener('click', function(e) {
             const input = document.getElementById('tiktok-url').value;
             if (!input) {
-                alert('Por favor, introduce un enlace de TikTok válido.');
-                return;
+                alert('Por favor, introduce un enlace de TikTok primero.');
+                e.preventDefault(); // Detiene la apertura si está vacío
             }
-            
-            const btn = this;
-            btn.innerText = 'Procesando descarga...';
-            btn.style.backgroundColor = '#6c757d';
-            btn.disabled = true;
-
-            // Aquí simula la respuesta. Si tienes un backend o API, se conectaría aquí.
-            setTimeout(() => {
-                btn.innerText = 'Descargar Video';
-                btn.style.backgroundColor = '#0084d6';
-                btn.disabled = false;
-                
-                // Abre el Smartlink o la descarga para asegurar que cuente el clic si el Popunder lo bloqueó
-                window.open("https://www.effectivecpmnetwork.com/twcjhkmh8m?key=bde1a376e8961d213e0b22566e176f82", "_blank");
-            }, 1500);
         });
     </script>
 
