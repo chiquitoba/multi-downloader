@@ -34,21 +34,25 @@ app.post('/api/extract', async (req, res) => {
             });
         }
         
-        // --- MOTOR DE INSTAGRAM (API ACTUALIZADA Y ESTABLE) ---
+        // --- MOTOR DE INSTAGRAM (USANDO UN PROXY EXTRACCIÓN ESTABLE) ---
         if (url.includes('instagram.com')) {
-            const response = await axios.get(`https://api.downloadly.xyz/api/instagram?url=${encodeURIComponent(url)}`);
+            // Limpiamos la URL para evitar parámetros de rastreo molestos
+            const cleanUrl = url.split('?')[0];
+            
+            // Usamos un proveedor alternativo integrado en formato API query
+            const response = await axios.get(`https://api.punetech.workers.dev/instagram?url=${encodeURIComponent(cleanUrl)}`);
             const data = response.data;
 
-            if (!data || !data.url) {
-                throw new Error('No se pudo encontrar el archivo de video. Asegúrate de que el Reel sea de una cuenta pública.');
+            if (!data || !data.downloadUrl) {
+                throw new Error('No se pudo extraer el video. Asegúrate de que el Reel sea de una cuenta pública.');
             }
 
             return res.json({
                 success: true,
-                title: data.title || 'Video de Instagram',
+                title: 'Video de Instagram',
                 thumbnail: data.thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
                 platform: 'instagram',
-                downloadUrl: data.url
+                downloadUrl: data.downloadUrl
             });
         }
 
