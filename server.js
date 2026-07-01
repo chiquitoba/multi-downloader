@@ -34,7 +34,7 @@ app.post('/api/extract', async (req, res) => {
             });
         }
         
-        // --- MOTOR DE INSTAGRAM AUTÓNOMO (SIN APIs INTERMEDIAS) ---
+        // --- MOTOR DE INSTAGRAM HTML SCRAPER (100% AUTÓNOMO) ---
         if (url.includes('instagram.com')) {
             const matches = url.match(/(?:reel|p|tv)\/([A-Za-z0-9_-]+)/);
             if (!matches) {
@@ -42,61 +42,47 @@ app.post('/api/extract', async (req, res) => {
             }
             
             const shortcode = matches[1];
-            // Consultamos la variante de datos limpios usando el formato de consulta de consulta nativo de Instagram
-            const targetUrl = `https://www.instagram.com/p/${shortcode}/?__a=1&__d=dis`;
+            // Usamos la versión de inserción pública oficial que no requiere sesión iniciada
+            const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
 
-            const response = await axios.get(targetUrl, {
+            const response = await axios.get(embedUrl, {
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
-                    'Accept': '*/*',
-                    'Accept-Language': 'en-US,en;q=0.9',
-                    'Sec-Fetch-Mode': 'navigate'
+                    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'es-ES,es;q=0.9'
                 }
             });
 
-            const data = response.data;
+            const html = response.data;
 
-            // Validar la estructura del objeto Graphql nativo de Meta
-            if (data && data.items && data.items[0]) {
-                const item = data.items[0];
-                
-                if (item.video_versions && item.video_versions.length > 0) {
-                    // Tomamos el flujo de video con mayor resolución disponible
-                    const videoUrl = item.video_versions[0].url;
-                    const thumbUrl = item.image_versions2 && item.image_versions2.candidates ? item.image_versions2.candidates[0].url : 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500';
+            // Intentar capturar la URL del video en sus dos variantes de empaquetado comunes de Meta
+            let videoUrl = null;
+            const videoMatchJson = html.match(/"video_url"\s*:\s*"([^"]+)"/);
+            const videoMatchHtml = html.match(/<video[^>]*src="([^"]+)"/);
 
-                    return res.json({
-                        success: true,
-                        title: item.caption && item.caption.text ? item.caption.text : 'Video de Instagram',
-                        thumbnail: thumbUrl,
-                        platform: 'instagram',
-                        downloadUrl: videoUrl
-                    });
-                } else {
-                    throw new Error('Esta publicación no contiene un archivo de video reproducible.');
-                }
-            } else {
-                // Alternativa de contingencia si Meta bloquea el JSON directo: parsear la página incrustada estándar
-                const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
-                const embedResponse = await axios.get(embedUrl, {
-                    headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36' }
+            if (videoMatchJson) {
+                videoUrl = videoMatchJson[1].replace(/\\u0026/g, '&');
+            } else if (videoMatchHtml) {
+                videoUrl = videoMatchHtml[1].replace(/&amp;/g, '&');
+            }
+
+            // Intentar capturar la miniatura (thumbnail) de respaldo
+            let thumbnailUrl = 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500';
+            const thumbMatch = html.match(/"display_url"\s*:\s*"([^"]+)"/);
+            if (thumbMatch) {
+                thumbnailUrl = thumbMatch[1].replace(/\\u0026/g, '&');
+            }
+
+            if (videoUrl) {
+                return res.json({
+                    success: true,
+                    title: 'Video de Instagram',
+                    thumbnail: thumbnailUrl,
+                    platform: 'instagram',
+                    downloadUrl: videoUrl
                 });
-                
-                const html = embedResponse.data;
-                const videoMatch = html.match(/"video_url":"([^"]+)"/);
-                
-                if (videoMatch) {
-                    const cleanVideoUrl = videoMatch[1].replace(/\\u0026/g, '&');
-                    return res.json({
-                        success: true,
-                        title: 'Video de Instagram',
-                        thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
-                        platform: 'instagram',
-                        downloadUrl: cleanVideoUrl
-                    });
-                }
-                
-                throw new Error('El servidor de Instagram denegó el acceso temporalmente. Inténtalo de nuevo.');
+            } else {
+                throw new Error('Meta restringió temporalmente el flujo de reproducción de este contenido. Reintenta en unos segundos.');
             }
         }
 
