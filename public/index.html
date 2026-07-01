@@ -62,7 +62,7 @@
 <div class="container">
     <h1>Descargador Multi-Plataforma</h1>
     <input type="text" id="videoUrl" placeholder="Pega el enlace de TikTok o Instagram aquí...">
-    <button onclick="procesarVideo()">Analizar Video</button>
+    <button id="actionBtn" onclick="procesarVideo()">Analizar Video</button>
 
     <div id="result">
         <h3 id="videoTitle"></h3>
@@ -74,9 +74,10 @@
 
 <script>
     async function procesarVideo() {
-        const url = document.getElementById('videoUrl').value;
+        const url = document.getElementById('videoUrl').value.trim();
         const resultDiv = document.getElementById('result');
         const errorMsg = document.getElementById('errorMsg');
+        const actionBtn = document.getElementById('actionBtn');
         
         resultDiv.style.display = 'none';
         errorMsg.innerText = '';
@@ -86,6 +87,39 @@
             return;
         }
 
+        // --- MANEJO DIRECTO DE INSTAGRAM ---
+        if (url.includes('instagram.com')) {
+            actionBtn.innerText = 'Procesando...';
+            try {
+                // Extracción híbrida del lado del navegador usando una pasarela CORS directa
+                const cleanUrl = url.split('?')[0];
+                const res = await fetch(`https://api.scraptik.workers.dev/instagram?url=${encodeURIComponent(cleanUrl)}`);
+                const data = await res.json();
+
+                if (data && data.downloadUrl) {
+                    document.getElementById('videoTitle').innerText = 'Video de Instagram Listo';
+                    document.getElementById('videoThumb').src = data.thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500';
+                    
+                    // Al ser Instagram, mandamos directo al video para evitar problemas de proxy
+                    document.getElementById('downloadBtn').href = data.downloadUrl;
+                    document.getElementById('downloadBtn').target = '_blank';
+                    
+                    resultDiv.style.display = 'block';
+                } else {
+                    // Plan de rescate alternativo si falla el worker automático
+                    window.open(`https://saveig.app/es?url=${encodeURIComponent(url)}`, '_blank');
+                    errorMsg.innerText = 'Abriendo el extractor optimizado en una pestaña nueva para saltar el bloqueo...';
+                }
+            } catch (e) {
+                window.open(`https://saveig.app/es?url=${encodeURIComponent(url)}`, '_blank');
+                errorMsg.innerText = 'Abriendo el extractor alternativo en una pestaña nueva...';
+            } finally {
+                actionBtn.innerText = 'Analizar Video';
+            }
+            return;
+        }
+
+        // --- MANEJO DE TIKTOK (Sigue funcionando por el servidor perfectamente) ---
         try {
             const response = await fetch('/api/extract', {
                 method: 'POST',
@@ -101,6 +135,7 @@
                 
                 const proxyDownloadUrl = `/api/download-file?url=${encodeURIComponent(data.downloadUrl)}&title=${encodeURIComponent(data.title)}`;
                 document.getElementById('downloadBtn').href = proxyDownloadUrl;
+                document.getElementById('downloadBtn').target = '_self';
                 
                 resultDiv.style.display = 'block';
             } else {
