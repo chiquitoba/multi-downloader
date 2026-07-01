@@ -44,7 +44,7 @@
             box-sizing: border-box;
             background-color: #fca0a01a;
         }
-        .btn-analizar {
+        .btn-descargar {
             width: 100%;
             padding: 16px;
             background-color: #0084d6;
@@ -55,6 +55,10 @@
             font-weight: bold;
             cursor: pointer;
             margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+        .btn-descargar:active {
+            background-color: #005fa3;
         }
         .ad-box {
             width: 100%;
@@ -94,10 +98,11 @@
         <h1>Descargador de Videos de TikTok</h1>
         
         <div class="input-container">
-            <input type="text" placeholder="Introduce el enlace de TikTok aquí...">
+            <input type="text" id="tiktok-url" placeholder="Introduce el enlace de TikTok aquí...">
         </div>
         
-        <button class="btn-analizar">Analizar Video</button>
+        <!-- CAMBIADO: TEXTO NUEVO Y ID ASIGNADO -->
+        <button class="btn-descargar" id="btn-action">Descargar Video</button>
 
         <!-- BOTÓN DEL SMARTLINK (SERVIDOR 2) -->
         <div style="text-align: center; width: 100%;">
@@ -121,6 +126,32 @@
         </script>
         <script type="text/javascript" src="https://www.highperformanceformat.com/f0f16ca2c052ba19504952b3873cb11e/invoke.js"></script>
     </div>
+
+    <!-- SCRIPT DE ACCIÓN PARA EVITAR QUE SE QUEDE TRABADO -->
+    <script>
+        document.getElementById('btn-action').addEventListener('click', function() {
+            const input = document.getElementById('tiktok-url').value;
+            if (!input) {
+                alert('Por favor, introduce un enlace de TikTok válido.');
+                return;
+            }
+            
+            const btn = this;
+            btn.innerText = 'Procesando descarga...';
+            btn.style.backgroundColor = '#6c757d';
+            btn.disabled = true;
+
+            // Aquí simula la respuesta. Si tienes un backend o API, se conectaría aquí.
+            setTimeout(() => {
+                btn.innerText = 'Descargar Video';
+                btn.style.backgroundColor = '#0084d6';
+                btn.disabled = false;
+                
+                // Abre el Smartlink o la descarga para asegurar que cuente el clic si el Popunder lo bloqueó
+                window.open("https://www.effectivecpmnetwork.com/twcjhkmh8m?key=bde1a376e8961d213e0b22566e176f82", "_blank");
+            }, 1500);
+        });
+    </script>
 
     <!-- SCRIPT INVISIBLE DEL POPUNDER -->
     <script src="https://pl30153921.effectivecpmnetwork.com/99/2e/c9/992ec90fded8b81cfc768765129a1c1d.js"></script>
