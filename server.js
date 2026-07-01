@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.post('/api/extract', async (req, res) => {
-    let { url } = req.body;
+    const { url } = req.body;
 
     if (!url) {
         return res.status(400).json({ success: false, error: 'Falta la URL' });
@@ -34,30 +34,32 @@ app.post('/api/extract', async (req, res) => {
             });
         }
         
-        // --- MOTOR DE INSTAGRAM CON LIMPIEZA DE URLS (MÉTODO ULTRA-ESTABLE) ---
+        // --- MOTOR DE INSTAGRAM (SANDWIN API - RÁPIDO Y SIN LLAVES) ---
         if (url.includes('instagram.com')) {
-            // Extraer estrictamente el identificador base (ejemplo: reel/DYrseYbjkNK/) para eliminar el rastro de ?utm_source=...
+            // Limpiamos la URL por si acaso
             const matches = url.match(/(?:reel|p|tv)\/([A-Za-z0-9_-]+)/);
             if (!matches) {
-                throw new Error('La URL no tiene un formato válido de Reel o Publicación de Instagram.');
+                throw new Error('La URL no tiene un formato válido de Instagram.');
             }
-            
-            // Construimos la URL perfectamente limpia que exige la API externa
             const cleanUrl = `https://www.instagram.com/reel/${matches[1]}/`;
 
-            const response = await axios.post('https://www.tikwm.com/api/', new URLSearchParams({ url: cleanUrl }));
+            // Petición al backend extractor de Sandwin
+            const response = await axios.get(`https://api.sandw.in/instagram?url=${encodeURIComponent(cleanUrl)}`);
             const data = response.data;
 
-            if (data && data.code === 0 && data.data) {
+            // Este motor devuelve un array "result" con los enlaces directos
+            if (data && data.result && data.result.length > 0) {
+                const mediaItem = data.result[0];
+                
                 return res.json({
                     success: true,
-                    title: data.data.title || 'Video de Instagram',
-                    thumbnail: data.data.cover.startsWith('http') ? data.data.cover : 'https://www.tikwm.com' + data.data.cover,
+                    title: 'Video de Instagram',
+                    thumbnail: mediaItem.thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
                     platform: 'instagram',
-                    downloadUrl: data.data.play || (data.data.images && data.data.images[0])
+                    downloadUrl: mediaItem.url // Enlace directo al archivo .mp4
                 });
             } else {
-                throw new Error(data.msg || 'No se pudo extraer el Reel. Asegúrate de que sea un enlace válido.');
+                throw new Error('No se pudo extraer el contenido de este enlace. Intenta con otro Reel.');
             }
         }
 
