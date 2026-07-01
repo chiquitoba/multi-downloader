@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Downloader Premium</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #1e293b;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h1 { margin-bottom: 1.5rem; color: #38bdf8; }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #334155;
+            border-radius: 0.5rem;
+            background-color: #0f172a;
+            color: #fff;
+            font-size: 1rem;
+            box-sizing: border-box;
+            margin-bottom: 1rem;
+        }
+        input:focus { border-color: #38bdf8; outline: none; }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #38bdf8;
+            color: #0f172a;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #7dd3fc; }
+        #result { margin-top: 1.5rem; display: none; }
+        .thumbnail { width: 100%; border-radius: 0.5rem; margin-top: 1rem; }
+        .error { color: #f87171; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Descargador de Videos</h1>
+    <input type="text" id="videoUrl" placeholder="Pega el enlace de TikTok aquí...">
+    <button onclick="procesarVideo()">Analizar Video</button>
+
+    <div id="result">
+        <h3 id="videoTitle"></h3>
+        <img id="videoThumb" class="thumbnail" src="" alt="Miniatura">
+        <a id="downloadBtn" href="#" style="display: block; margin-top: 1rem;"><button style="background-color: #4ade80;">Descargar Ahora</button></a>
+    </div>
+    <div id="errorMsg" class="error"></div>
+</div>
+
+<script>
+    async function procesarVideo() {
+        const url = document.getElementById('videoUrl').value;
+        const resultDiv = document.getElementById('result');
+        const errorMsg = document.getElementById('errorMsg');
+        
+        resultDiv.style.display = 'none';
+        errorMsg.innerText = '';
+
+        if(!url) {
+            errorMsg.innerText = 'Por favor, ingresa una URL.';
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:5001/api/extract', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url })
+            });
+
+            const data = await response.json();
+
+            if(data.success) {
+                document.getElementById('videoTitle').innerText = data.title;
+                document.getElementById('videoThumb').src = data.thumbnail;
+                
+                const proxyDownloadUrl = `http://localhost:5001/api/download-file?url=${encodeURIComponent(data.downloadUrl)}&title=${encodeURIComponent(data.title)}`;
+                document.getElementById('downloadBtn').href = proxyDownloadUrl;
+                
+                resultDiv.style.display = 'block';
+            } else {
+                errorMsg.innerText = data.error || 'No se pudo extraer el video.';
+            }
+        } catch (err) {
+            errorMsg.innerText = 'Error al conectar con el servidor backend.';
+        }
+    }
+</script>
+
+</body>
+</html>
