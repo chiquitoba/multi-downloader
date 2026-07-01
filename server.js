@@ -34,15 +34,11 @@ app.post('/api/extract', async (req, res) => {
             });
         }
         
-        // --- RESPUESTA CONTROLADA PARA OTRAS PLATAFORMAS ---
-        if (url.includes('instagram.com')) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'El soporte para Instagram está en mantenimiento temporal. ¡Usa enlaces de TikTok por ahora!' 
-            });
-        }
-
-        return res.status(400).json({ success: false, error: 'Plataforma no soportada en este momento.' });
+        // --- RESPUESTA EN CASO DE INTRODUCIR CUALQUIER OTRA PLATAFORMA ---
+        return res.status(400).json({ 
+            success: false, 
+            error: 'Por los momentos solo soportamos enlaces de TikTok. ¡Introduce un enlace válido!' 
+        });
 
     } catch (error) {
         return res.status(500).json({ success: false, error: error.message });
