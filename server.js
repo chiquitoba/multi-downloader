@@ -34,37 +34,25 @@ app.post('/api/extract', async (req, res) => {
             });
         }
         
-        // --- MOTOR DE INSTAGRAM (PLAN B MÁS ESTABLE) ---
+        // --- MOTOR DE INSTAGRAM (API ACTUALIZADA Y ESTABLE) ---
         if (url.includes('instagram.com')) {
-            // Usamos un endpoint alternativo directo muy rápido
-            const response = await axios.get(`https://api.api-xyz.me/api/instagram?url=${encodeURIComponent(url)}`).catch(() => null);
-            
-            if (!response || !response.data || !response.data.result) {
-                // Intento secundario si el primero falla
-                const fallback = await axios.get(`https://api.vkrdown.com/api/instagram.php?url=${encodeURIComponent(url)}`);
-                if (!fallback.data || !fallback.data.data || !fallback.data.data.download_url) {
-                    throw new Error('No se pudo extraer el Reel. Asegúrate de que el enlace sea de una cuenta pública.');
-                }
-                return res.json({
-                    success: true,
-                    title: fallback.data.data.caption || 'Video de Instagram',
-                    thumbnail: fallback.data.data.thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
-                    platform: 'instagram',
-                    downloadUrl: fallback.data.data.download_url
-                });
+            const response = await axios.get(`https://api.downloadly.xyz/api/instagram?url=${encodeURIComponent(url)}`);
+            const data = response.data;
+
+            if (!data || !data.url) {
+                throw new Error('No se pudo encontrar el archivo de video. Asegúrate de que el Reel sea de una cuenta pública.');
             }
 
-            const media = response.data.result[0];
             return res.json({
                 success: true,
-                title: 'Video de Instagram',
-                thumbnail: media.thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
+                title: data.title || 'Video de Instagram',
+                thumbnail: data.thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
                 platform: 'instagram',
-                downloadUrl: media.url
+                downloadUrl: data.url
             });
         }
 
-        return res.status(400).json({ success: false, error: 'Plataforma no soportada. Introduce TikTok o Instagram.' });
+        return res.status(400).json({ success: false, error: 'Plataforma no soportada.' });
 
     } catch (error) {
         return res.status(500).json({ success: false, error: error.message });
@@ -92,7 +80,7 @@ app.get('/api/download-file', async (req, res) => {
         res.setHeader('Content-Type', 'video/mp4');
         response.data.pipe(res);
     } catch (error) {
-        res.status(500).send('Error al descargar el archivo.');
+        res.status(500).send('Error al procesar la descarga del archivo.');
     }
 });
 
