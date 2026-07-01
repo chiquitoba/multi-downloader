@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.post('/api/extract', async (req, res) => {
-    const { url } = req.body;
+    let { url } = req.body;
 
     if (!url) {
         return res.status(400).json({ success: false, error: 'Falta la URL' });
@@ -34,22 +34,30 @@ app.post('/api/extract', async (req, res) => {
             });
         }
         
-        // --- MOTOR DE INSTAGRAM (USANDO EL ENDPOINT ESTABLE DE TIKWM) ---
+        // --- MOTOR DE INSTAGRAM CON LIMPIEZA DE URLS (MÉTODO ULTRA-ESTABLE) ---
         if (url.includes('instagram.com')) {
-            const response = await axios.post('https://www.tikwm.com/api/', new URLSearchParams({ url: url }));
+            // Extraer estrictamente el identificador base (ejemplo: reel/DYrseYbjkNK/) para eliminar el rastro de ?utm_source=...
+            const matches = url.match(/(?:reel|p|tv)\/([A-Za-z0-9_-]+)/);
+            if (!matches) {
+                throw new Error('La URL no tiene un formato válido de Reel o Publicación de Instagram.');
+            }
+            
+            // Construimos la URL perfectamente limpia que exige la API externa
+            const cleanUrl = `https://www.instagram.com/reel/${matches[1]}/`;
+
+            const response = await axios.post('https://www.tikwm.com/api/', new URLSearchParams({ url: cleanUrl }));
             const data = response.data;
 
-            // Tikwm devuelve code: 0 cuando procesa exitosamente tanto TikTok como Instagram
             if (data && data.code === 0 && data.data) {
                 return res.json({
                     success: true,
                     title: data.data.title || 'Video de Instagram',
                     thumbnail: data.data.cover.startsWith('http') ? data.data.cover : 'https://www.tikwm.com' + data.data.cover,
                     platform: 'instagram',
-                    downloadUrl: data.data.play || data.data.images[0]
+                    downloadUrl: data.data.play || (data.data.images && data.data.images[0])
                 });
             } else {
-                throw new Error(data.msg || 'No se pudo extraer el Reel. Inténtalo de nuevo.');
+                throw new Error(data.msg || 'No se pudo extraer el Reel. Asegúrate de que sea un enlace válido.');
             }
         }
 
