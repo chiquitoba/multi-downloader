@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.post('/api/extract', async (req, res) => {
-    const { url } = req.body;
+    let { url } = req.body;
 
     if (!url) {
         return res.status(400).json({ success: false, error: 'Falta la URL' });
@@ -34,39 +34,55 @@ app.post('/api/extract', async (req, res) => {
             });
         }
         
-        // --- MOTOR DE INSTAGRAM (SANDWIN API - RÁPIDO Y SIN LLAVES) ---
+        // --- MOTOR DE INSTAGRAM PRO (COBALT OPEN-SOURCE API) ---
         if (url.includes('instagram.com')) {
-            // Limpiamos la URL por si acaso
-            const matches = url.match(/(?:reel|p|tv)\/([A-Za-z0-9_-]+)/);
-            if (!matches) {
-                throw new Error('La URL no tiene un formato válido de Instagram.');
-            }
-            const cleanUrl = `https://www.instagram.com/reel/${matches[1]}/`;
+            // Limpieza básica de la URL por si acaso
+            const cleanUrl = url.split('?')[0];
 
-            // Petición al backend extractor de Sandwin
-            const response = await axios.get(`https://api.sandw.in/instagram?url=${encodeURIComponent(cleanUrl)}`);
+            const response = await axios.post('https://api.cobalt.tools/api/json', {
+                url: cleanUrl,
+                videoQuality: '720', // Calidad óptima asegurada
+                filenamePattern: 'classic'
+            }, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+
             const data = response.data;
 
-            // Este motor devuelve un array "result" con los enlaces directos
-            if (data && data.result && data.result.length > 0) {
-                const mediaItem = data.result[0];
-                
+            // Cobalt devuelve "stream" si encuentra el enlace directo al video
+            if (data && data.status === 'stream' && data.url) {
                 return res.json({
                     success: true,
                     title: 'Video de Instagram',
-                    thumbnail: mediaItem.thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
+                    thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500', // Miniatura genérica elegante
                     platform: 'instagram',
-                    downloadUrl: mediaItem.url // Enlace directo al archivo .mp4
+                    downloadUrl: data.url
+                });
+            } else if (data && data.status === 'picker' && data.picker && data.picker.length > 0) {
+                // En caso de que sea un carrusel, toma el primer elemento válido
+                return res.json({
+                    success: true,
+                    title: 'Video de Instagram',
+                    thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
+                    platform: 'instagram',
+                    downloadUrl: data.picker[0].url
                 });
             } else {
-                throw new Error('No se pudo extraer el contenido de este enlace. Intenta con otro Reel.');
+                throw new Error('No se pudo obtener el flujo de descarga. Intenta con otro Reel.');
             }
         }
 
         return res.status(400).json({ success: false, error: 'Plataforma no soportada.' });
 
     } catch (error) {
-        return res.status(500).json({ success: false, error: error.message });
+        // Capturar mensajes de error específicos devueltos por la API de Cobalt si existen
+        const errorText = error.response && error.response.data && error.response.data.text 
+            ? error.response.data.text 
+            : error.message;
+        return res.status(500).json({ success: false, error: errorText });
     }
 });
 
@@ -83,7 +99,7 @@ app.get('/api/download-file', async (req, res) => {
             url: videoUrl,
             responseType: 'stream',
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
             }
         });
 
@@ -91,7 +107,7 @@ app.get('/api/download-file', async (req, res) => {
         res.setHeader('Content-Type', 'video/mp4');
         response.data.pipe(res);
     } catch (error) {
-        res.status(500).send('Error al procesar la descarga del archivo.');
+        res.status(500).send('Error al procesar la descarga del archivo binario.');
     }
 });
 
