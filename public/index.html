@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Downloader Premium</title>
+    <title>Multi-Downloader Pro</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -52,15 +52,15 @@
         }
         button:hover { background-color: #7dd3fc; }
         #result { margin-top: 1.5rem; display: none; }
-        .thumbnail { width: 100%; border-radius: 0.5rem; margin-top: 1rem; }
+        .thumbnail { width: 100%; border-radius: 0.5rem; margin-top: 1rem; max-height: 300px; object-fit: cover; }
         .error { color: #f87171; margin-top: 1rem; word-break: break-all; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Descargador de Videos</h1>
-    <input type="text" id="videoUrl" placeholder="Pega el enlace de TikTok aquí...">
+    <h1>Descargador Multi-Plataforma</h1>
+    <input type="text" id="videoUrl" placeholder="Pega el enlace de TikTok o Instagram aquí...">
     <button onclick="procesarVideo()">Analizar Video</button>
 
     <div id="result">
@@ -81,7 +81,7 @@
         errorMsg.innerText = '';
 
         if(!url) {
-            errorMsg.innerText = 'Por favor, ingresa una URL.';
+            errorMsg.innerText = 'Por favor, ingresa una URL válida.';
             return;
         }
 
@@ -106,7 +106,7 @@
                 errorMsg.innerText = data.error || 'No se pudo extraer el video.';
             }
         } catch (err) {
-            errorMsg.innerText = 'Error: ' + err.message;
+            errorMsg.innerText = 'Error de conexión: ' + err.message;
         }
     }
 </script>
