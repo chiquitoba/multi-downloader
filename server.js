@@ -10,7 +10,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Ruta principal para extraer videos (Soporta TikTok e Instagram)
 app.post('/api/extract', async (req, res) => {
     const { url } = req.body;
 
@@ -35,44 +34,46 @@ app.post('/api/extract', async (req, res) => {
             });
         }
         
-        // --- MOTOR DE INSTAGRAM ---
+        // --- MOTOR DE INSTAGRAM (PLAN B MÁS ESTABLE) ---
         if (url.includes('instagram.com')) {
-            // Usamos un proveedor alternativo directo y robusto
-            const response = await axios.get(`https://api.scraptik.com/instagram/download?url=${encodeURIComponent(url)}`).catch(() => {
-                // Si falla el primero, usamos un segundo respaldo de inmediato
-                return axios.get(`https://api.downloadgram.org/api/instagram?url=${encodeURIComponent(url)}`);
-            });
+            // Usamos un endpoint alternativo directo muy rápido
+            const response = await axios.get(`https://api.api-xyz.me/api/instagram?url=${encodeURIComponent(url)}`).catch(() => null);
             
-            const data = response.data;
-
-            // Buscamos la URL del video dentro de la respuesta de la API
-            const downloadUrl = data.download_url || (data.urls && data.urls[0]) || (data.result && data.result[0]?.url);
-
-            if (!downloadUrl) {
-                throw new Error('No se pudo obtener el enlace de descarga de Instagram. Verifica que el Reel sea de una cuenta pública.');
+            if (!response || !response.data || !response.data.result) {
+                // Intento secundario si el primero falla
+                const fallback = await axios.get(`https://api.vkrdown.com/api/instagram.php?url=${encodeURIComponent(url)}`);
+                if (!fallback.data || !fallback.data.data || !fallback.data.data.download_url) {
+                    throw new Error('No se pudo extraer el Reel. Asegúrate de que el enlace sea de una cuenta pública.');
+                }
+                return res.json({
+                    success: true,
+                    title: fallback.data.data.caption || 'Video de Instagram',
+                    thumbnail: fallback.data.data.thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
+                    platform: 'instagram',
+                    downloadUrl: fallback.data.data.download_url
+                });
             }
 
+            const media = response.data.result[0];
             return res.json({
                 success: true,
-                title: data.title || data.caption || 'Video de Instagram',
-                thumbnail: data.thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
+                title: 'Video de Instagram',
+                thumbnail: media.thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
                 platform: 'instagram',
-                downloadUrl: downloadUrl
+                downloadUrl: media.url
             });
         }
 
-        return res.status(400).json({ success: false, error: 'Plataforma no soportada. Introduce un link de TikTok o Instagram.' });
+        return res.status(400).json({ success: false, error: 'Plataforma no soportada. Introduce TikTok o Instagram.' });
 
     } catch (error) {
         return res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Proxy para forzar la descarga del archivo con un nombre limpio
 app.get('/api/download-file', async (req, res) => {
     const videoUrl = req.query.url;
     let title = req.query.title || 'video';
-    
     title = title.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50);
 
     if (!videoUrl) return res.status(400).send('Falta la URL del video');
@@ -91,10 +92,10 @@ app.get('/api/download-file', async (req, res) => {
         res.setHeader('Content-Type', 'video/mp4');
         response.data.pipe(res);
     } catch (error) {
-        res.status(500).send('Error al descargar el archivo a través del servidor.');
+        res.status(500).send('Error al descargar el archivo.');
     }
 });
 
 app.listen(PORT, () => {
-    console.log(`Servidor de descarga corriendo perfectamente en el puerto ${PORT}`);
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
