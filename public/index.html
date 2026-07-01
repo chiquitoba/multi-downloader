@@ -92,6 +92,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
             box-sizing: border-box;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -120,9 +121,9 @@
         <button class="btn-analizar" id="btn-action">Obtener Enlaces de Descarga</button>
 
         <div class="result-container" id="results">
-            <a href="#" id="download-link-real" target="_blank" rel="noopener noreferrer" class="btn-download-real">
+            <button id="download-link-real" class="btn-download-real">
                 📥 Descargar Video Real (Sin Marca de Agua)
-            </a>
+            </button>
 
             <div style="text-align: center; width: 100%; margin-top: 5px;">
                 <a href="https://www.effectivecpmnetwork.com/twcjhkmh8m?key=bde1a376e8961d213e0b22566e176f82" target="_blank" rel="noopener noreferrer" style="display: inline-block; width: 100%; padding: 14px 20px; background: linear-gradient(135deg, #ff9900 0%, #ff5500 100%); color: #ffffff; font-weight: bold; font-size: 16px; text-decoration: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(255, 85, 0, 0.3); box-sizing: border-box;">
@@ -147,11 +148,12 @@
     </div>
 
     <script>
+        let videoUrlReal = ""; // Guarda temporalmente la URL directa de la API
+
         document.getElementById('btn-action').addEventListener('click', async function() {
             const urlInput = document.getElementById('tiktok-url').value.trim();
             const btn = this;
             const resultsContainer = document.getElementById('results');
-            const realDownloadLink = document.getElementById('download-link-real');
 
             if (!urlInput) {
                 alert('Por favor, introduce un enlace de TikTok válido.');
@@ -163,29 +165,56 @@
             resultsContainer.style.display = 'none';
 
             try {
-                // Usamos una API pública y gratuita de procesamiento de TikTok sin marcas de agua
                 const response = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(urlInput)}`);
                 const data = await response.json();
 
                 if (data && data.data && data.data.play) {
-                    // Seteamos el enlace de descarga directo del mp4 sin marca de agua
-                    realDownloadLink.href = data.data.play;
-                    
-                    // Mostramos la caja de resultados con los dos botones
+                    videoUrlReal = data.data.play; // Guardamos el enlace del .mp4
                     resultsContainer.style.display = 'flex';
                     btn.innerText = '¡Enlaces Generados!';
                 } else {
                     alert('No se pudo extraer el video. Asegúrate de que el enlace sea público.');
                     btn.innerText = 'Obtener Enlaces de Descarga';
-                    btn.disabled = false;
                 }
             } catch (error) {
                 console.error(error);
-                alert('Error de conexión con el servidor de TikTok. Inténtalo de nuevo.');
+                alert('Error de conexión al procesar el enlace.');
                 btn.innerText = 'Obtener Enlaces de Descarga';
-                btn.disabled = false;
             } finally {
                 btn.disabled = false;
+            }
+        });
+
+        // FORZAR DESCARGA DIRECTA AL DARLE AL BOTÓN VERDE
+        document.getElementById('download-link-real').addEventListener('click', async function() {
+            if (!videoUrlReal) return;
+            
+            const originalText = this.innerText;
+            this.innerText = '📥 Descargando archivo...';
+            this.disabled = true;
+
+            try {
+                // Descarga el archivo en la memoria del navegador para forzar almacenamiento físico
+                const response = await fetch(videoUrlReal);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `tiktok_video_${Date.now()}.mp4`; // Fuerza el guardado directo
+                document.body.appendChild(a);
+                a.click();
+                
+                // Limpieza del archivo temporal
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error(error);
+                // Si falla por CORS de la API externa, abre en pestaña nueva como plan B seguro
+                window.open(videoUrlReal, '_blank');
+            } finally {
+                this.innerText = originalText;
+                this.disabled = false;
             }
         });
     </script>
