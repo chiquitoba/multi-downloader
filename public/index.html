@@ -44,8 +44,7 @@
             box-sizing: border-box;
             background-color: #fca0a01a;
         }
-        .btn-descargar {
-            display: inline-block;
+        .btn-analizar {
             width: 100%;
             padding: 16px;
             background-color: #0084d6;
@@ -54,14 +53,13 @@
             border-radius: 10px;
             font-size: 16px;
             font-weight: bold;
-            text-decoration: none;
             cursor: pointer;
             margin-bottom: 20px;
-            box-sizing: border-box;
             transition: background 0.2s;
         }
-        .btn-descargar:hover {
-            background-color: #0073bc;
+        .btn-analizar:disabled {
+            background-color: #9cd1f5;
+            cursor: not-allowed;
         }
         .ad-box {
             width: 100%;
@@ -70,19 +68,35 @@
             align-items: center;
             box-sizing: border-box;
         }
-        .ad-top {
-            max-width: 728px;
-            min-height: 90px;
+        .ad-top { max-width: 728px; min-height: 90px; }
+        .ad-bottom { max-width: 300px; min-height: 250px; }
+        
+        /* Contenedor de descarga real */
+        .result-container {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px dashed #ccd0d5;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
         }
-        .ad-bottom {
-            max-width: 300px;
-            min-height: 250px;
+        .btn-download-real {
+            display: inline-block;
+            width: 100%;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            text-decoration: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            box-sizing: border-box;
         }
     </style>
 </head>
 <body>
 
-    <!-- BANNER SUPERIOR (728x90) -->
     <div class="ad-box ad-top">
         <script type="text/javascript">
             atOptions = {
@@ -96,7 +110,6 @@
         <script type="text/javascript" src="https://www.highperformanceformat.com/a2fc1372fb0ce2568dbe11274debc73d/invoke.js"></script>
     </div>
 
-    <!-- TARJETA PRINCIPAL -->
     <div class="container">
         <h1>Descargador de Videos de TikTok</h1>
         
@@ -104,21 +117,22 @@
             <input type="text" id="tiktok-url" placeholder="Introduce el enlace de TikTok aquí...">
         </div>
         
-        <!-- BOTÓN PRINCIPAL MONETIZADO -->
-        <a href="https://www.effectivecpmnetwork.com/twcjhkmh8m?key=bde1a376e8961d213e0b22566e176f82" target="_blank" rel="noopener noreferrer" class="btn-descargar" id="btn-main">
-            Descargar Video
-        </a>
+        <button class="btn-analizar" id="btn-action">Obtener Enlaces de Descarga</button>
 
-        <!-- BOTÓN DEL SMARTLINK (SERVIDOR 2) -->
-        <div style="text-align: center; width: 100%;">
-            <a href="https://www.effectivecpmnetwork.com/twcjhkmh8m?key=bde1a376e8961d213e0b22566e176f82" target="_blank" rel="noopener noreferrer" style="display: inline-block; width: 100%; padding: 14px 20px; background: linear-gradient(135deg, #ff9900 0%, #ff5500 100%); color: #ffffff; font-weight: bold; font-size: 16px; text-decoration: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(255, 85, 0, 0.3); box-sizing: border-box;">
-                ⚡ Servidor 2: Descarga en Alta Velocidad (HD)
+        <div class="result-container" id="results">
+            <a href="#" id="download-link-real" target="_blank" rel="noopener noreferrer" class="btn-download-real">
+                📥 Descargar Video Real (Sin Marca de Agua)
             </a>
-            <p style="margin-top: 8px; font-size: 12px; color: #666666; margin-bottom: 0;">Si el servidor principal presenta lentitud, usa esta opción alternativa</p>
+
+            <div style="text-align: center; width: 100%; margin-top: 5px;">
+                <a href="https://www.effectivecpmnetwork.com/twcjhkmh8m?key=bde1a376e8961d213e0b22566e176f82" target="_blank" rel="noopener noreferrer" style="display: inline-block; width: 100%; padding: 14px 20px; background: linear-gradient(135deg, #ff9900 0%, #ff5500 100%); color: #ffffff; font-weight: bold; font-size: 16px; text-decoration: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(255, 85, 0, 0.3); box-sizing: border-box;">
+                    ⚡ Servidor 2: Descarga en Alta Velocidad (HD)
+                </a>
+                <p style="margin-top: 8px; font-size: 11px; color: #666666; margin-bottom: 0;">Si el servidor principal presenta lentitud, usa esta opción alternativa publicitaria</p>
+            </div>
         </div>
     </div>
 
-    <!-- BANNER INFERIOR (300x250) -->
     <div class="ad-box ad-bottom">
         <script type="text/javascript">
             atOptions = {
@@ -132,18 +146,50 @@
         <script type="text/javascript" src="https://www.highperformanceformat.com/f0f16ca2c052ba19504952b3873cb11e/invoke.js"></script>
     </div>
 
-    <!-- Alerta estética sencilla si el usuario hace clic sin meter nada (opcional) -->
     <script>
-        document.getElementById('btn-main').addEventListener('click', function(e) {
-            const input = document.getElementById('tiktok-url').value;
-            if (!input) {
-                alert('Por favor, introduce un enlace de TikTok primero.');
-                e.preventDefault(); // Detiene la apertura si está vacío
+        document.getElementById('btn-action').addEventListener('click', async function() {
+            const urlInput = document.getElementById('tiktok-url').value.trim();
+            const btn = this;
+            const resultsContainer = document.getElementById('results');
+            const realDownloadLink = document.getElementById('download-link-real');
+
+            if (!urlInput) {
+                alert('Por favor, introduce un enlace de TikTok válido.');
+                return;
+            }
+
+            btn.innerText = 'Procesando video...';
+            btn.disabled = true;
+            resultsContainer.style.display = 'none';
+
+            try {
+                // Usamos una API pública y gratuita de procesamiento de TikTok sin marcas de agua
+                const response = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(urlInput)}`);
+                const data = await response.json();
+
+                if (data && data.data && data.data.play) {
+                    // Seteamos el enlace de descarga directo del mp4 sin marca de agua
+                    realDownloadLink.href = data.data.play;
+                    
+                    // Mostramos la caja de resultados con los dos botones
+                    resultsContainer.style.display = 'flex';
+                    btn.innerText = '¡Enlaces Generados!';
+                } else {
+                    alert('No se pudo extraer el video. Asegúrate de que el enlace sea público.');
+                    btn.innerText = 'Obtener Enlaces de Descarga';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error de conexión con el servidor de TikTok. Inténtalo de nuevo.');
+                btn.innerText = 'Obtener Enlaces de Descarga';
+                btn.disabled = false;
+            } finally {
+                btn.disabled = false;
             }
         });
     </script>
 
-    <!-- SCRIPT INVISIBLE DEL POPUNDER -->
     <script src="https://pl30153921.effectivecpmnetwork.com/99/2e/c9/992ec90fded8b81cfc768765129a1c1d.js"></script>
 
 </body>
