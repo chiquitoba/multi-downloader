@@ -3,120 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Downloader Pro</title>
+    <title>Descargar Videos de TikTok Sin Marca de Agua Gratis en HD</title>
+    <meta name="description" content="La herramienta más rápida para descargar videos de TikTok online sin marca de agua. Bajar videos de TikTok en MP4 de alta calidad gratis y al instante.">
+    <meta name="keywords" content="descargar videos de tiktok, bajar videos de tiktok, tiktok sin marca de agua, downloader tiktok mp4, tiktok gratis hd">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #ffffff;
-            color: #1e293b;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background-color: #f1f5f9;
-            padding: 2.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-            border: 1px solid #e2e8f0;
-        }
-        h1 { margin-bottom: 1.5rem; color: #0284c7; }
-        input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #cbd5e1;
-            border-radius: 0.5rem;
-            background-color: #ffffff;
-            color: #0f172a;
-            font-size: 1rem;
-            box-sizing: border-box;
-            margin-bottom: 1rem;
-        }
-        input:focus { border-color: #0284c7; outline: none; }
-        button {
-            width: 100%;
-            padding: 0.75rem;
-            background-color: #0284c7;
-            color: #ffffff;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover { background-color: #0369a1; }
-        #result { margin-top: 1.5rem; display: none; }
-        .thumbnail { width: 100%; border-radius: 0.5rem; margin-top: 1rem; max-height: 300px; object-fit: cover; }
-        .error { color: #ef4444; margin-top: 1rem; word-break: break-all; font-weight: 500; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { background: #f0f4f8; color: #333; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; }
+        
+        .container { background: #ffffff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 650px; text-align: center; margin-bottom: 30px; }
+        h1 { color: #0084d0; font-size: 2rem; margin-bottom: 25px; font-weight: 700; }
+        
+        .input-group { position: relative; margin-bottom: 20px; }
+        input[type="text"] { width: 100%; padding: 18px 20px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; outline: none; transition: border-color 0.3s; }
+        input[type="text"]:focus { border-color: #0084d0; }
+        
+        button { width: 100%; background: #0084d0; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background 0.3s, transform 0.1s; }
+        button:hover { background: #0073b5; }
+        button:active { transform: scale(0.98); }
+        
+        .error-msg { color: #ef4444; margin-top: 15px; font-weight: 600; display: none; font-size: 0.95rem; }
+        .loading { display: none; margin-top: 15px; color: #666; font-weight: 600; }
+        
+        /* Resultado */
+        .result-box { display: none; margin-top: 30px; border-top: 2px dashed #e2e8f0; padding-top: 25px; }
+        .thumb-preview { width: 150px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .video-title { font-size: 0.95rem; color: #555; margin-bottom: 20px; max-height: 50px; overflow: hidden; text-overflow: ellipsis; }
+        .btn-download { background: #10b981; display: inline-block; width: auto; padding: 12px 30px; text-decoration: none; color: white; border-radius: 10px; font-weight: 600; }
+        .btn-download:hover { background: #059669; }
+
+        /* Contenedores de Anuncios */
+        .ad-space { width: 100%; max-width: 650px; background: #e2e8f0; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 15px; margin: 15px 0; text-align: center; color: #64748b; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Sección de Contenido SEO */
+        .seo-content { width: 100%; max-width: 650px; text-align: left; background: white; padding: 35px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.02); margin-top: 10px; }
+        .seo-content h2 { color: #1e293b; font-size: 1.4rem; margin-top: 25px; margin-bottom: 12px; }
+        .seo-content p { color: #475569; font-size: 0.95rem; line-height: 1.6; margin-bottom: 15px; }
+        .seo-content ol { padding-left: 20px; color: #475569; font-size: 0.95rem; line-height: 1.6; margin-bottom: 15px; }
+        .seo-content ol li { margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Descargador Multi-Plataforma</h1>
-    <input type="text" id="videoUrl" placeholder="Pega el enlace de TikTok o Instagram aquí...">
-    <button id="actionBtn" onclick="procesarVideo()">Analizar Video</button>
-
-    <div id="result">
-        <h3 id="videoTitle"></h3>
-        <img id="videoThumb" class="thumbnail" src="" alt="Miniatura">
-        <a id="downloadBtn" href="#" style="display: block; margin-top: 1rem;"><button style="background-color: #22c55e;">Descargar Ahora</button></a>
+    <!-- ESPACIO DE MONETIZACIÓN: ANUNCIO SUPERIOR -->
+    <div class="ad-space" id="ad-slot-top">
+        Espacio Publicitario Disponible
+        <!-- Aquí pegarás el código de tu banner de Adsterra/Adsense más adelante -->
     </div>
-    <div id="errorMsg" class="error"></div>
-</div>
 
-<script>
-    async function procesarVideo() {
-        const url = document.getElementById('videoUrl').value.trim();
-        const resultDiv = document.getElementById('result');
-        const errorMsg = document.getElementById('errorMsg');
-        const actionBtn = document.getElementById('actionBtn');
+    <div class="container">
+        <h1>Descargador de Videos de TikTok</h1>
         
-        resultDiv.style.display = 'none';
-        errorMsg.innerText = '';
+        <div class="input-group">
+            <input type="text" id="videoUrl" placeholder="Introduce el enlace de TikTok aquí..." autocomplete="off">
+        </div>
+        
+        <button id="btnAnalyze" onclick="analyzeVideo()">Analizar Video</button>
+        
+        <div class="loading" id="loadingText">Procesando enlace... Por favor, espera.</div>
+        <div class="error-msg" id="errorText"></div>
 
-        if(!url) {
-            errorMsg.innerText = 'Por favor, ingresa una URL válida.';
-            return;
-        }
+        <!-- Caja de Resultados -->
+        <div class="result-box" id="resultBox">
+            <img src="" id="videoThumb" class="thumb-preview" alt="Miniatura del video">
+            <p class="video-title" id="videoTitle"></p>
+            <a href="" id="downloadLink" class="btn-download" target="_blank">Descargar MP4</a>
+        </div>
+    </div>
 
-        actionBtn.innerText = 'Procesando...';
+    <!-- ESPACIO DE MONETIZACIÓN: ANUNCIO INTERMEDIO -->
+    <div class="ad-space" id="ad-slot-bottom">
+        Espacio Publicitario Disponible
+    </div>
 
-        try {
-            const response = await fetch('/api/extract', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url })
-            });
+    <!-- SECCIÓN DE TEXTO SEO PARA POSICIONAR EN GOOGLE -->
+    <div class="seo-content">
+        <h2>¿Cómo descargar videos de TikTok sin marca de agua?</h2>
+        <p>Bajar tus contenidos favoritos de la plataforma es sumamente sencillo usando nuestra herramienta en línea. Sigue estos tres pasos rápidos:</p>
+        <ol>
+            <li><strong>Copia el enlace:</strong> Abre la aplicación de TikTok, selecciona el video que deseas guardar, presiona el botón de "Compartir" y elige "Copiar enlace".</li>
+            <li><strong>Pega la URL:</strong> Regresa a nuestra web, introduce el link copiado dentro del cuadro de texto superior.</li>
+            <li><strong>Descarga al instante:</strong> Presiona el botón "Analizar Video". En unos segundos aparecerá la miniatura y el botón verde para guardar el archivo MP4 directamente en tu dispositivo en la calidad original.</li>
+        </ol>
 
-            const data = await response.json();
+        <h2>¿Por qué utilizar este descargador online de TikTok?</h2>
+        <p>A diferencia de otras opciones en internet, nuestro sistema está optimizado para procesar los flujos de video de forma directa y limpia, garantizando descargas gratuitas e ilimitadas. Podrás guardar los videos tanto en computadoras de escritorio como en dispositivos móviles Android o iPhone (iOS) sin necesidad de instalar molestas aplicaciones externas ni extensiones en tu navegador.</p>
 
-            if(data.success) {
-                document.getElementById('videoTitle').innerText = data.title;
-                document.getElementById('videoThumb').src = data.thumbnail;
-                
-                // Forzamos descarga limpia usando nuestro backend proxy
-                const proxyDownloadUrl = `/api/download-file?url=${encodeURIComponent(data.downloadUrl)}&title=${encodeURIComponent(data.title)}`;
-                document.getElementById('downloadBtn').href = proxyDownloadUrl;
-                
-                resultDiv.style.display = 'block';
-            } else {
-                errorMsg.innerText = data.error || 'No se pudo extraer el video.';
+        <h2>¿Es gratuito y seguro el guardado de archivos?</h2>
+        <p>Sí, este descargador es 100% gratuito. No almacenamos copias de los videos descargados en nuestro servidor ni rastreamos tu historial de navegación, lo que garantiza una experiencia totalmente privada, segura y fluida para el usuario.</p>
+    </div>
+
+    <script>
+        async function analyzeVideo() {
+            const urlInput = document.getElementById('videoUrl').value.trim();
+            const btnAnalyze = document.getElementById('btnAnalyze');
+            const loadingText = document.getElementById('loadingText');
+            const errorText = document.getElementById('errorText');
+            const resultBox = document.getElementById('resultBox');
+
+            // Resetear estados
+            errorText.style.display = 'none';
+            resultBox.style.display = 'none';
+            
+            if (!urlInput) {
+                errorText.innerText = 'Por favor, introduce una URL válida.';
+                errorText.style.display = 'block';
+                return;
             }
-        } catch (err) {
-            errorMsg.innerText = 'Error de conexión: ' + err.message;
-        } finally {
-            actionBtn.innerText = 'Analizar Video';
-        }
-    }
-</script>
 
+            btnAnalyze.disabled = true;
+            loadingText.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/extract', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: urlInput })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'No se pudo analizar el video.');
+                }
+
+                // Renderizar los datos devueltos por el backend exclusivo de TikTok
+                document.getElementById('videoThumb').src = data.thumbnail;
+                document.getElementById('videoTitle').innerText = data.title;
+                
+                // Usamos nuestro endpoint de proxy de descarga forzada para guardar el archivo con su nombre correcto
+                document.getElementById('downloadLink').href = `/api/download-file?url=${encodeURIComponent(data.downloadUrl)}&title=${encodeURIComponent(data.title)}`;
+                
+                resultBox.style.display = 'block';
+            } catch (err) {
+                errorText.innerText = err.message;
+                errorText.style.display = 'block';
+            } finally {
+                btnAnalyze.disabled = false;
+                loadingText.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
