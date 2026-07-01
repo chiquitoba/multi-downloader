@@ -37,20 +37,27 @@ app.post('/api/extract', async (req, res) => {
         
         // --- MOTOR DE INSTAGRAM ---
         if (url.includes('instagram.com')) {
-            // Usamos una API pública de extracción directa para Reels/Videos
-            const response = await axios.get(`https://api.vkrdown.com/api/instagram.php?url=${encodeURIComponent(url)}`);
+            // Usamos un proveedor alternativo directo y robusto
+            const response = await axios.get(`https://api.scraptik.com/instagram/download?url=${encodeURIComponent(url)}`).catch(() => {
+                // Si falla el primero, usamos un segundo respaldo de inmediato
+                return axios.get(`https://api.downloadgram.org/api/instagram?url=${encodeURIComponent(url)}`);
+            });
+            
             const data = response.data;
 
-            if (!data || !data.data || !data.data.download_url) {
-                throw new Error('No se encontró un video descargable en este enlace de Instagram. Asegúrate de que la cuenta sea pública.');
+            // Buscamos la URL del video dentro de la respuesta de la API
+            const downloadUrl = data.download_url || (data.urls && data.urls[0]) || (data.result && data.result[0]?.url);
+
+            if (!downloadUrl) {
+                throw new Error('No se pudo obtener el enlace de descarga de Instagram. Verifica que el Reel sea de una cuenta pública.');
             }
 
             return res.json({
                 success: true,
-                title: data.data.caption || 'Video de Instagram',
-                thumbnail: data.data.thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
+                title: data.title || data.caption || 'Video de Instagram',
+                thumbnail: data.thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
                 platform: 'instagram',
-                downloadUrl: data.data.download_url
+                downloadUrl: downloadUrl
             });
         }
 
@@ -66,7 +73,6 @@ app.get('/api/download-file', async (req, res) => {
     const videoUrl = req.query.url;
     let title = req.query.title || 'video';
     
-    // Limpiar caracteres extraños del título
     title = title.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50);
 
     if (!videoUrl) return res.status(400).send('Falta la URL del video');
