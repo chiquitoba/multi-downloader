@@ -18,7 +18,7 @@ app.post('/api/extract', async (req, res) => {
     }
 
     try {
-        // --- MOTOR DE TIKTOK ---
+        // --- MOTOR DE TIKTOK (Estable) ---
         if (url.includes('tiktok.com')) {
             const response = await axios.post('https://www.tikwm.com/api/', new URLSearchParams({ url: url, hd: '1' }));
             const data = response.data;
@@ -34,46 +34,49 @@ app.post('/api/extract', async (req, res) => {
             });
         }
         
-        // --- MOTOR DE INSTAGRAM AUTÓNOMO (MÉTODO DE CONSULTA DIRECTA POR API ABIERTA DE INSTAGRAM) ---
+        // --- MOTOR DE INSTAGRAM PREMIUM AUTOMÁTICO ---
         if (url.includes('instagram.com')) {
-            // Limpiar URL base del reel o post
-            const matches = url.match(/(?:reel|p)\/([A-Za-z0-9_-]+)/);
+            // Extraer el identificador único del Reel / Post
+            const matches = url.match(/(?:reel|p|tv)\/([A-Za-z0-9_-]+)/);
             if (!matches) {
-                throw new Error('URL de Instagram no válida o no soportada. Asegúrate de que sea un Reel o Publicación pública.');
+                throw new Error('La URL no tiene un formato válido de Reel de Instagram.');
             }
-            
             const shortcode = matches[1];
-            // Consultamos mediante una API puente global de renderizado alternativo estático (Instatools Mirror)
-            const proxyUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
-            
-            const response = await axios.get(proxyUrl, {
+
+            // Consultamos un motor API de respaldo público de alta rotación (FastIG API)
+            const options = {
+                method: 'GET',
+                url: `https://instagram-downloader-download-instagram-videos-stories.p.rapidapi.com/index`,
+                params: { url: `https://www.instagram.com/p/${shortcode}/` },
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Mobile Safari/537.36'
+                    'x-rapidapi-key': '2b9cfba298msh2f36f98ef479f6cp156cfajsn85cbe047fa55',
+                    'x-rapidapi-host': 'instagram-downloader-download-instagram-videos-stories.p.rapidapi.com'
                 }
-            });
+            };
 
-            const html = response.data;
-            
-            // Extraer el enlace del video directo codificado en el árbol del reproductor nativo embebido
-            const videoMatch = html.match(/"video_url":"([^"]+)"/);
-            const thumbMatch = html.match(/"display_url":"([^"]+)"/);
-            
-            if (!videoMatch) {
-                // Alternativa secundaria si es un carrusel o imagen estática
-                throw new Error('No se pudo localizar el flujo de video directo. Verifica que el Reel pertenezca a una cuenta pública.');
+            const response = await axios.request(options);
+            const data = response.data;
+
+            // Mapeamos las respuestas del motor de la API pública
+            if (data && data.media) {
+                return res.json({
+                    success: true,
+                    title: 'Video de Instagram',
+                    thumbnail: data.thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
+                    platform: 'instagram',
+                    downloadUrl: data.media
+                });
+            } else if (data && data.Type === 'Post-Video' && data.Download) {
+                return res.json({
+                    success: true,
+                    title: 'Video de Instagram',
+                    thumbnail: data.Thumbnail || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500',
+                    platform: 'instagram',
+                    downloadUrl: data.Download
+                });
+            } else {
+                throw new Error('El sistema de extracción externa está saturado. Inténtalo de nuevo en unos segundos.');
             }
-
-            // Decodificar caracteres Unicode devueltos por el JSON interno de Meta (\u0025 -> %, \u0026 -> &)
-            const rawVideoUrl = videoMatch[1].replace(/\\u0026/g, '&');
-            const rawThumbUrl = thumbMatch ? thumbMatch[1].replace(/\\u0026/g, '&') : 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500';
-
-            return res.json({
-                success: true,
-                title: 'Video de Instagram',
-                thumbnail: rawThumbUrl,
-                platform: 'instagram',
-                downloadUrl: rawVideoUrl
-            });
         }
 
         return res.status(400).json({ success: false, error: 'Plataforma no soportada.' });
@@ -96,8 +99,7 @@ app.get('/api/download-file', async (req, res) => {
             url: videoUrl,
             responseType: 'stream',
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
-                'Accept': '*/*'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
         });
 
